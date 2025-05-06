@@ -47,7 +47,7 @@ int main()
 
 	// glfw window creation
 	// --------------------
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "tinyopengl", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -105,7 +105,7 @@ int main()
 
 		// render
 		// ------
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClearColor(0.72f, 0.53f, 0.56f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// don't forget to enable shader before setting uniforms
