@@ -35,6 +35,10 @@ bool firstMouse = true;
 // timing
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+glm::vec3 penguinPosition = glm::vec3(0, 0, 0);
+int frameCount = 0;
+double previousTime = glfwGetTime();
+float fps = 0.0;
 
 int main()
 {
@@ -135,7 +139,7 @@ int main()
 		glClearColor(0.72f, 0.53f, 0.56f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		drawUI();
+		
 
 		// don't forget to enable shader before setting uniforms
 		ourShader.use();
@@ -147,13 +151,48 @@ int main()
 		ourShader.setMat4("view", view);
 
 		// render the loaded model
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+		//glm::mat4 model = glm::mat4(1.0f);
+		//model = glm::translate(model, penguinPosition); // translate it down so it's at the center of the scene
+		//model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+		//ourShader.setMat4("model", model);
+		//ourModel.Draw(ourShader);
+
+		//for (int i = 0; i < 4095; ++i)
+		//{
+		//	float x = (i % 50) * 0.2f;  // 50 columns
+		//	float z = (i / 50) * 0.2f;  // 20 rows
+
+		//	glm::vec3 position = glm::vec3(x, -0.5f, z);
+
+		//	glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+		//	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//	model = glm::scale(model, glm::vec3(1.2f));
+
+		//	ourShader.setMat4("model", model);
+		//	ourModel.Draw(ourShader);
+		//}
+
+
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+		model = glm::scale(model, glm::vec3(1.2f));
+
 		ourShader.setMat4("model", model);
 		ourModel.Draw(ourShader);
+		drawUI();
 
+		frameCount++;
+		double currentTime = glfwGetTime();
+		double elapsedTime = currentTime - previousTime;
+
+		if (elapsedTime >= 1.0) // If one second has passed
+		{
+			 fps = double(frameCount) / elapsedTime;
+
+			frameCount = 0;
+			previousTime = currentTime;
+		}
 
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -317,21 +356,18 @@ void SetupImGuiStyle()
 
 void drawUI()
 {
-
-	// === Start the ImGui frame ===
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	ImGui::Begin("TinyOpengl");
 
-	ImGui::Text("%.2f FPS", 20);
+	ImGui::Text("%.2f FPS", fps);
 	ImGui::Spacing();
 	ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),  "collision detected");
 	ImGui::Spacing();
 
-	//ImGui::DragFloat3("Sphere position", &spherePosition[0], 0.1f);
-	//ImGui::DragFloat3("Cube position", &glassContainer[0], 0.1f);
+	ImGui::DragFloat3("Penguin position", &penguinPosition[0], 0.1f);
 
 	ImGui::Spacing();
 	ImGui::Spacing();
