@@ -7,6 +7,7 @@ in vec3 FragPos;
 in vec3 FragNormal;
 
 uniform sampler2D texture_diffuse1;
+uniform vec3 viewPos; 
 
 void main()
 {    
