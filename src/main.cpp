@@ -159,20 +159,20 @@ int main()
 		//ourShader.setMat4("model", model);
 		//ourModel.Draw(ourShader);
 
-		//for (int i = 0; i < 4095; ++i)
-		//{
-		//	float x = (i % 50) * 0.2f;  // 50 columns
-		//	float z = (i / 50) * 0.2f;  // 20 rows
+		for (int i = 0; i < 4095; ++i)
+		{
+			float x = (i % 50) * 2.5f;  // 50 columns
+			float z = (i / 50) * 2.5f;  // 20 rows
 
-		//	glm::vec3 position = glm::vec3(x, -0.5f, z);
+			glm::vec3 position = glm::vec3(x, -0.5f, z);
 
-		//	glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-		//	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//	model = glm::scale(model, glm::vec3(1.2f));
+			glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(1.2f));
 
-		//	ourShader.setMat4("model", model);
-		//	ourModel.Draw(ourShader);
-		//}
+			ourShader.setMat4("model", model);
+			ourModel.Draw(ourShader);
+		}
 
 
 		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
