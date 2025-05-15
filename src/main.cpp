@@ -14,6 +14,7 @@
 #include <iostream>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_glfw.h>
+#include <chrono>
 
 void framebuffer_size_callback(GLFWwindow *window, int width, int height);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
@@ -21,6 +22,9 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
 void SetupImGuiStyle();
 void drawUI();
+
+// number of objects
+const unsigned int OBJECT_INSTANCES = 50000;
 
 // settings
 const unsigned int SCR_WIDTH = 800;
@@ -39,6 +43,7 @@ glm::vec3 penguinPosition = glm::vec3(0, 0, 0);
 int frameCount = 0;
 double previousTime = glfwGetTime();
 float fps = 0.0;
+float loadingTime = 0.0;
 
 int main()
 {
@@ -159,7 +164,9 @@ int main()
 		//ourShader.setMat4("model", model);
 		//ourModel.Draw(ourShader);
 
-		for (int i = 0; i < 4095; ++i)
+		auto start = std::chrono::high_resolution_clock::now();
+
+		for (int i = 0; i < OBJECT_INSTANCES; ++i)
 		{
 			float x = (i % 50) * 2.5f;  // 50 columns
 			float z = (i / 50) * 2.5f;  // 20 rows
@@ -173,6 +180,10 @@ int main()
 			ourShader.setMat4("model", model);
 			ourModel.Draw(ourShader);
 		}
+
+		auto end = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<float, std::milli> elapsed = end - start;
+		loadingTime = elapsed.count();
 
 
 		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
@@ -363,18 +374,21 @@ void drawUI()
 
 	ImGui::Begin("TinyOpengl");
 
+	ImGui::Text("Number of objects: %d", OBJECT_INSTANCES);
 	ImGui::Text("%.2f FPS", fps);
-	ImGui::Spacing();
-	ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),  "collision detected");
-	ImGui::Spacing();
+	ImGui::Text("Loading time: %.2f ms", loadingTime);
+	//ImGui::Spacing();
+	//ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f),  "collision detected");
+	//ImGui::Spacing();
 
-	ImGui::DragFloat3("Penguin position", &penguinPosition[0], 0.1f);
+	//ImGui::DragFloat3("Penguin position", &penguinPosition[0], 0.1f);
+
 
 	ImGui::Spacing();
 	ImGui::Spacing();
 	ImGui::Text("WASDEQ - Move camera");
 	ImGui::Text("Right click - Look around");
-	ImGui::Text("Arrows - Move the cube");
+	ImGui::Text("Arrows - Move the penguin");
 	ImGui::End();
 
 	ImGui::Render();
