@@ -45,6 +45,14 @@ double previousTime = glfwGetTime();
 float fps = 0.0;
 float loadingTime = 0.0;
 
+
+#define GPU_ENGINE 1
+extern "C"
+{
+	__declspec(dllexport) unsigned long NvOptimusEnablement = GPU_ENGINE;
+	__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = GPU_ENGINE;
+}
+
 int main()
 {
 	// glfw: initialize and configure
@@ -120,7 +128,19 @@ int main()
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
 	
+	GLuint ubo;
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 
+	GLint alignment = 256; 
+	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &alignment);
+
+	GLsizeiptr mat4Size = sizeof(glm::mat4);
+	GLsizeiptr alignedSize = ((mat4Size + alignment - 1) / alignment) * alignment;
+	GLsizeiptr totalSize = OBJECT_INSTANCES * alignedSize;
+
+	glBufferData(GL_UNIFORM_BUFFER, totalSize, nullptr, GL_DYNAMIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	// draw in wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -145,8 +165,6 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		
-
-		// don't forget to enable shader before setting uniforms
 		ourShader.use();
 
 		// view/projection transformations
@@ -156,42 +174,34 @@ int main()
 		ourShader.setMat4("view", view);
 		ourShader.setVec3("viewPos", camera.Position);
 
-		// render the loaded model
-		//glm::mat4 model = glm::mat4(1.0f);
-		//model = glm::translate(model, penguinPosition); // translate it down so it's at the center of the scene
-		//model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-		//ourShader.setMat4("model", model);
-		//ourModel.Draw(ourShader);
-
 		auto start = std::chrono::high_resolution_clock::now();
 
+		glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 		for (int i = 0; i < OBJECT_INSTANCES; ++i)
 		{
-			float x = (i % 50) * 2.5f;  // 50 columns
-			float z = (i / 50) * 2.5f;  // 20 rows
-
+			float x = (i % 50) * 2.5f;
+			float z = (i / 50) * 2.5f;
 			glm::vec3 position = glm::vec3(x, -0.5f, z);
 
 			glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
 			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 			model = glm::scale(model, glm::vec3(1.2f));
 
-			ourShader.setMat4("model", model);
+			glBufferSubData(GL_UNIFORM_BUFFER, i * alignedSize, sizeof(glm::mat4), glm::value_ptr(model));
+		}
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		for (int i = 0; i < OBJECT_INSTANCES; ++i)
+		{
+			glBindBufferRange(GL_UNIFORM_BUFFER, 0, ubo, i * alignedSize, sizeof(glm::mat4));
 			ourModel.Draw(ourShader);
 		}
+
 
 		auto end = std::chrono::high_resolution_clock::now();
 		std::chrono::duration<float, std::milli> elapsed = end - start;
 		loadingTime = elapsed.count();
 
-
-		glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0,0,0));
-		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(1.2f));
-
-		ourShader.setMat4("model", model);
-		ourModel.Draw(ourShader);
 		drawUI();
 
 		frameCount++;
