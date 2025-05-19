@@ -16,10 +16,10 @@
 #include <backends/imgui_impl_glfw.h>
 #include <chrono>
 
-void framebuffer_size_callback(GLFWwindow *window, int width, int height);
-void mouse_callback(GLFWwindow *window, double xpos, double ypos);
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow* window);
 void SetupImGuiStyle();
 void drawUI();
 
@@ -68,7 +68,7 @@ int main()
 
 	// glfw window creation
 	// --------------------
-	GLFWwindow *window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "tinyopengl", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "tinyopengl", NULL, NULL);
 	if (window == NULL)
 	{
 		std::cout << "Failed to create GLFW window" << std::endl;
@@ -127,12 +127,12 @@ int main()
 	SetupImGuiStyle();
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 330");
-	
+
 	GLuint ubo;
 	glGenBuffers(1, &ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 
-	GLint alignment = 256; 
+	GLint alignment = 256;
 	glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &alignment);
 
 	GLsizeiptr mat4Size = sizeof(glm::mat4);
@@ -140,6 +140,19 @@ int main()
 	GLsizeiptr totalSize = OBJECT_INSTANCES * alignedSize;
 
 	glBufferData(GL_UNIFORM_BUFFER, totalSize, nullptr, GL_DYNAMIC_DRAW);
+
+	for (int i = 0; i < OBJECT_INSTANCES; ++i)
+	{
+		float x = (i % 50) * 2.5f;
+		float z = (i / 50) * 2.5f;
+		glm::vec3 position = glm::vec3(x, -0.5f, z);
+
+		glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
+		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.2f));
+
+		glBufferSubData(GL_UNIFORM_BUFFER, i * alignedSize, sizeof(glm::mat4), glm::value_ptr(model));
+	}
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 	// draw in wireframe
@@ -164,7 +177,7 @@ int main()
 		glClearColor(0.72f, 0.53f, 0.56f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		
+
 		ourShader.use();
 
 		// view/projection transformations
@@ -176,20 +189,6 @@ int main()
 
 		auto start = std::chrono::high_resolution_clock::now();
 
-		glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-		for (int i = 0; i < OBJECT_INSTANCES; ++i)
-		{
-			float x = (i % 50) * 2.5f;
-			float z = (i / 50) * 2.5f;
-			glm::vec3 position = glm::vec3(x, -0.5f, z);
-
-			glm::mat4 model = glm::translate(glm::mat4(1.0f), position);
-			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-			model = glm::scale(model, glm::vec3(1.2f));
-
-			glBufferSubData(GL_UNIFORM_BUFFER, i * alignedSize, sizeof(glm::mat4), glm::value_ptr(model));
-		}
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
 		for (int i = 0; i < OBJECT_INSTANCES; ++i)
 		{
@@ -210,7 +209,7 @@ int main()
 
 		if (elapsedTime >= 1.0) // If one second has passed
 		{
-			 fps = double(frameCount) / elapsedTime;
+			fps = double(frameCount) / elapsedTime;
 
 			frameCount = 0;
 			previousTime = currentTime;
@@ -231,7 +230,7 @@ int main()
 
 // process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
@@ -248,7 +247,7 @@ void processInput(GLFWwindow *window)
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
 // ---------------------------------------------------------------------------------------------
-void framebuffer_size_callback(GLFWwindow *window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
 	// make sure the viewport matches the new window dimensions; note that width and 
 	// height will be significantly larger than specified on retina displays.
@@ -257,7 +256,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 
 // glfw: whenever the mouse moves, this callback is called
 // -------------------------------------------------------
-void mouse_callback(GLFWwindow *window, double xposIn, double yposIn)
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)
 {
 	float xpos = static_cast<float>(xposIn);
 	float ypos = static_cast<float>(yposIn);
@@ -280,7 +279,7 @@ void mouse_callback(GLFWwindow *window, double xposIn, double yposIn)
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
-void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
