@@ -7,6 +7,9 @@ in vec3 FragPos;
 in vec3 FragNormal;
 
 uniform sampler2D texture_diffuse1;
+uniform sampler2D roughness_map1;
+uniform sampler2D normal_map1;
+
 uniform vec3 viewPos; 
 
 vec3 Uncharted2Tonemap(vec3 x) {
@@ -91,7 +94,7 @@ vec3 lightPos = vec3(1.0, 5.0, 1.0);
 vec3 lightDir = normalize(lightPos - FragPos); 
 vec3 lightColor = vec3(1.0, 0.75, 0.8)*3; 
 vec3 objectColor = vec3(0.0, 1.0, 0.0);
-vec4 texColor = texture(texture_diffuse1, TexCoords);
+vec4 texColor = texture(normal_map1, TexCoords);
 texColor.rgb = pow(texColor.rgb, vec3(2.2));
 objectColor = pow(objectColor, vec3(2.2));
 

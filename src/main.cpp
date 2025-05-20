@@ -110,12 +110,22 @@ int main()
 	t.type = "texture_diffuse";
 	t.id = TextureFromFile("pink.jpg", RESOURCES_PATH);
 
+	Texture t1 = {};
+	t1.type = "roughness_map";
+	t1.id = TextureFromFile("pink.jpg", RESOURCES_PATH);
+
+	Texture t2 = {};
+	t2.type = "normal_map";
+	t2.id = TextureFromFile("pink.jpg", RESOURCES_PATH);
+
 	for (auto& m : ourModel.meshes)
 	{
 		m.textures.clear();
 		if (m.textures.empty())
 		{
 			m.textures.push_back(t);
+			m.textures.push_back(t1);
+			m.textures.push_back(t2);
 		}
 	}
 

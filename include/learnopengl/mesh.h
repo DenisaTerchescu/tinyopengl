@@ -72,9 +72,9 @@ public:
             string name = textures[i].type;
             if(name == "texture_diffuse")
                 number = std::to_string(diffuseNr++);
-            else if(name == "texture_specular")
+            else if(name == "roughness_map")
                 number = std::to_string(specularNr++); // transfer unsigned int to string
-            else if(name == "texture_normal")
+            else if(name == "normal_map")
                 number = std::to_string(normalNr++); // transfer unsigned int to string
              else if(name == "texture_height")
                 number = std::to_string(heightNr++); // transfer unsigned int to string
