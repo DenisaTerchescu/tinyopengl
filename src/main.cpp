@@ -104,19 +104,19 @@ int main()
 
 	// load models
 	// -----------
-	Model ourModel(RESOURCES_PATH  "pinguin/pinguin.glb");
+	Model ourModel(RESOURCES_PATH  "sphere/sphere.glb");
 
 	Texture t = {};
 	t.type = "texture_diffuse";
-	t.id = TextureFromFile("pink.jpg", RESOURCES_PATH);
+	t.id = TextureFromFile("texture/textMapDiffuse.jpg", RESOURCES_PATH);
 
 	Texture t1 = {};
 	t1.type = "roughness_map";
-	t1.id = TextureFromFile("pink.jpg", RESOURCES_PATH);
+	t1.id = TextureFromFile("texture/texture2.jpg", RESOURCES_PATH);
 
 	Texture t2 = {};
 	t2.type = "normal_map";
-	t2.id = TextureFromFile("pink.jpg", RESOURCES_PATH);
+	t2.id = TextureFromFile("texture/textureMapNormal.png", RESOURCES_PATH);
 
 	for (auto& m : ourModel.meshes)
 	{
