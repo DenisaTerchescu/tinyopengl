@@ -83,44 +83,108 @@ vec3 ACESFitted(vec3 color)
     return color;
 }
 
+//https://learnopengl.com/PBR/Lighting
+const float PI = 3.14159265359;
+
+float distributionGGX (vec3 N, vec3 H, float roughness){
+	float a2    = roughness * roughness * roughness * roughness;
+	float NdotH = max (dot (N, H), 0.0);
+	float denom = (NdotH * NdotH * (a2 - 1.0) + 1.0);
+	return a2 / (PI * denom * denom);
+}
+
+float geometrySchlickGGX (float NdotV, float roughness){
+	float r = (roughness + 1.0);
+	float k = (r * r) / 8.0;
+	return NdotV / (NdotV * (1.0 - k) + k);
+}
+
+float geometrySmith (vec3 N, vec3 V, vec3 L, float roughness){
+	return geometrySchlickGGX (max (dot (N, L), 0.0), roughness) * 
+		   geometrySchlickGGX (max (dot (N, V), 0.0), roughness);
+}
+
+vec3 fresnelSchlick (float cosTheta, vec3 F0){
+	return F0 + (1.0 - F0) * pow (1.0 - cosTheta, 5.0);
+}
+
+
+//L is vector towards light (normalize(lightPositions - WorldPos))
+//V is the view vector, from world pos, camera (normalize(camPos - WorldPos))
+vec3 PBR(vec3 N, vec3 V, vec3 L, vec3 albedo, vec3 lightColor,
+	float roughness, float metallic)
+{
+	vec3 H = normalize (V + L);
+
+	 // Cook-Torrance BRDF
+	 vec3  F0 = mix (vec3 (0.04), albedo, metallic);
+	 float NDF = distributionGGX(N, H, roughness);
+	 float G   = geometrySmith(N, V, L, roughness);
+	 vec3  F   = fresnelSchlick(max(dot(H, V), 0.0), F0);        
+	 vec3  kD  = vec3(1.0) - F;
+	 kD *= 1.0 - metallic;	  
+	 
+	 vec3  numerator   = NDF * G * F;
+	 float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+	 vec3  specular    = numerator / max(denominator, 0.001);  
+		 
+	 float NdotL = max(dot(N, L), 0.0);                
+	 vec3  color = lightColor * (kD * albedo / PI + specular) * NdotL; 
+	 //color /= lightAentuation; light atenuation can go here
+
+	 return color;
+}
+
+
+//https://gamedev.stackexchange.com/questions/22204/from-normal-to-rotation-matrix#:~:text=Therefore%2C%20if%20you%20want%20to,the%20first%20and%20second%20columns.
+mat3x3 NormalToRotation(in vec3 normal)
+{
+	// Find a vector in the plane
+	vec3 tangent0 = cross(normal, vec3(1, 0, 0));
+	if (dot(tangent0, tangent0) < 0.001)
+		tangent0 = cross(normal, vec3(0, 1, 0));
+	tangent0 = normalize(tangent0);
+	// Find another vector in the plane
+	vec3 tangent1 = normalize(cross(normal, tangent0));
+	// Construct a 3x3 matrix by storing three vectors in the columns of the matrix
+	return mat3x3(tangent0,tangent1,normal);
+	//return ColumnVectorsToMatrix(tangent0, tangent1, normal);
+}
+
 
 void main()
 {    
-   // FragColor = texture(texture_diffuse1, TexCoords);
 
-      // outColor = texture(texSampler, fragTexCoord);
-
-vec3 lightPos = vec3(1.0, 5.0, 1.0); 
+vec3 lightPos = vec3(1.0, 7.0, 1.0); 
 vec3 lightDir = normalize(lightPos - FragPos); 
-vec3 lightColor = vec3(1.0, 0.75, 0.8)*3; 
-vec3 objectColor = vec3(0.0, 1.0, 0.0);
-vec4 texColor = texture(normal_map1, TexCoords);
+vec3 lightColor = vec3(3.0); 
+vec4 texColor = texture(texture_diffuse1, TexCoords);
 texColor.rgb = pow(texColor.rgb, vec3(2.2));
-objectColor = pow(objectColor, vec3(2.2));
 
-// ambient light
-vec3 ambientColor = vec3(0.1, 0.1, 0.1);
+vec3 L = normalize(lightPos - FragPos);  
+vec3 V = normalize(viewPos - FragPos);  
+vec3 N = normalize(FragNormal);  
 
-// diffuse light
-float diff = max(dot(FragNormal, lightDir), 0.0);
-vec3 diffuseLighting = diff * lightColor;
+vec3 normal = texture(normal_map1, TexCoords).rgb;
+normal = normalize(2*normal - 1.f);
+mat3 rotMat = NormalToRotation(FragNormal);
+normal = rotMat * normal;
+normal = normalize(normal);
+N = normal; //enable normal map
+
+
+vec3 mr = texture(roughness_map1, TexCoords).rgb;
+    float metallic = mr.b;
+    float roughness = max(mr.g, 0.01);
+    float ao = mr.r;
 
 
 
-// specular light
-float specularStrength = 10.0;
-vec3 viewDir = normalize(viewPos - FragPos);
-// vec3 reflectDir = reflect(-lightDir, fragNormal); // Phong
-
-vec3 halfwayDir = normalize(lightDir + viewDir); // Blinn-Phong
-float spec = pow(max(dot(FragNormal, halfwayDir), 0.0), 64.0);
-
-//float spec = pow(max(dot(viewDir, reflectDir), 0.0), 64);
-if (diff <= 0) { spec = 0;}
-vec3 specular = specularStrength * spec * lightColor;  
-
-//vec3 finalColor = (diffuseLighting + ambientColor + specular) * objectColor;
-vec3 finalColor = (diffuseLighting + ambientColor + specular) * texColor.rgb;
-FragColor  = vec4(ACESFitted(finalColor * 0.7), texColor.a); 
-FragColor .rgb = pow(FragColor.rgb, vec3(1/2.2)); 
+vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
+	 roughness, metallic);
+finalColor += ao * 0.05 * texColor.rgb; 
+FragColor = vec4(ACESFitted(finalColor * 1.2), texColor.a); 
+//outColor = texColor;
+FragColor.rgb = pow(FragColor.rgb, vec3(1/2.2));
+//outColor = vec4(normal,1);
 }

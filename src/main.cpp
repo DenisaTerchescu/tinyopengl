@@ -112,7 +112,7 @@ int main()
 
 	Texture t1 = {};
 	t1.type = "roughness_map";
-	t1.id = TextureFromFile("texture/texture2.jpg", RESOURCES_PATH);
+	t1.id = TextureFromFile("texture/textureMap2.jpg", RESOURCES_PATH);
 
 	Texture t2 = {};
 	t2.type = "normal_map";
