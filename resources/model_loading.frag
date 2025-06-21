@@ -170,7 +170,7 @@ normal = normalize(2*normal - 1.f);
 mat3 rotMat = NormalToRotation(FragNormal);
 normal = rotMat * normal;
 normal = normalize(normal);
-N = normal; //enable normal map
+N = normal; 
 
 
 vec3 mr = texture(roughness_map1, TexCoords).rgb;
@@ -178,13 +178,11 @@ vec3 mr = texture(roughness_map1, TexCoords).rgb;
     float roughness = max(mr.g, 0.01);
     float ao = mr.r;
 
-
-
 vec3 finalColor = PBR( N,  V,  L, texColor.rgb, lightColor,
 	 roughness, metallic);
 finalColor += ao * 0.05 * texColor.rgb; 
 FragColor = vec4(ACESFitted(finalColor * 1.2), texColor.a); 
-//outColor = texColor;
 FragColor.rgb = pow(FragColor.rgb, vec3(1/2.2));
-//outColor = vec4(normal,1);
+
+
 }
